@@ -12,6 +12,8 @@ import { Colors, Radius, Shadows, Spacing } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
 import { fetchNotices, fetchParentStudent, fetchHomework } from '@/services/schoolData';
 import { getSupabaseClient } from '@/template';
+import { router } from 'expo-router';
+import { ResponsiveContainer } from '@/components/ui/ResponsiveContainer';
 
 const supabase = getSupabaseClient();
 
@@ -103,7 +105,8 @@ export default function ParentFeed() {
   return (
     <View style={{ flex: 1, backgroundColor: Colors.background }}>
       <SafeAreaView edges={['top']} style={{ backgroundColor: Colors.primaryDark }}>
-        <LinearGradient colors={[Colors.primaryDark, Colors.primary, '#2A6FDB']} style={styles.heroWrap}>
+        <ResponsiveContainer maxWidth={600}>
+          <LinearGradient colors={[Colors.primaryDark, Colors.primary, '#2A6FDB']} style={styles.heroWrap}>
           <View style={styles.row}>
             <View>
               <Text style={styles.hello}>{greeting}</Text>
@@ -149,6 +152,7 @@ export default function ParentFeed() {
             )}
           </View>
         </LinearGradient>
+        </ResponsiveContainer>
       </SafeAreaView>
 
       <ScrollView
@@ -156,6 +160,7 @@ export default function ParentFeed() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         showsVerticalScrollIndicator={false}
       >
+        <ResponsiveContainer maxWidth={600}>
         {/* Emergency Alert Banner */}
         {activeAlerts.length > 0 && (
           <View style={styles.alertBanner}>
@@ -245,7 +250,48 @@ export default function ParentFeed() {
           </View>
         )}
 
+        <Text style={styles.sectionTitle}>Dashboard</Text>
+        <View style={styles.dashboardGrid}>
+          <Pressable style={styles.dashboardTile} onPress={() => router.push('/(parent)/safety')}>
+            <View style={[styles.tileIconWrap, { backgroundColor: Colors.successBg }]}>
+              <MaterialCommunityIcons name="bus-clock" size={28} color={Colors.success} />
+            </View>
+            <Text style={styles.tileLabel}>Safety</Text>
+          </Pressable>
+          <Pressable style={styles.dashboardTile} onPress={() => router.push('/(parent)/academic')}>
+            <View style={[styles.tileIconWrap, { backgroundColor: Colors.primary + '18' }]}>
+              <MaterialCommunityIcons name="book-education" size={28} color={Colors.primary} />
+            </View>
+            <Text style={styles.tileLabel}>Academic</Text>
+          </Pressable>
+          <Pressable style={styles.dashboardTile} onPress={() => router.push('/(parent)/attendance')}>
+            <View style={[styles.tileIconWrap, { backgroundColor: Colors.warningBg }]}>
+              <MaterialCommunityIcons name="calendar-check" size={28} color={Colors.warning} />
+            </View>
+            <Text style={styles.tileLabel}>Attendance</Text>
+          </Pressable>
+          <Pressable style={styles.dashboardTile} onPress={() => router.push('/(parent)/timetable')}>
+            <View style={[styles.tileIconWrap, { backgroundColor: '#7C3AED18' }]}>
+              <MaterialCommunityIcons name="timetable" size={28} color="#7C3AED" />
+            </View>
+            <Text style={styles.tileLabel}>Timetable</Text>
+          </Pressable>
+          <Pressable style={styles.dashboardTile} onPress={() => router.push('/(parent)/assistant')}>
+            <View style={[styles.tileIconWrap, { backgroundColor: Colors.infoBg }]}>
+              <MaterialCommunityIcons name="brain" size={28} color={Colors.info} />
+            </View>
+            <Text style={styles.tileLabel}>AI Assistant</Text>
+          </Pressable>
+          <Pressable style={styles.dashboardTile} onPress={() => router.push('/(parent)/profile')}>
+            <View style={[styles.tileIconWrap, { backgroundColor: Colors.saffron + '18' }]}>
+              <MaterialCommunityIcons name="account-circle" size={28} color={Colors.saffron} />
+            </View>
+            <Text style={styles.tileLabel}>Profile</Text>
+          </Pressable>
+        </View>
+
         <Text style={styles.footer}>Made by team NovaThink</Text>
+        </ResponsiveContainer>
       </ScrollView>
     </View>
   );
@@ -296,5 +342,9 @@ const styles = StyleSheet.create({
   feedTag: { fontSize: 10, fontWeight: '800', color: Colors.textMuted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 },
   feedTitle: { fontSize: 14, fontWeight: '700', color: Colors.textPrimary, lineHeight: 20 },
   feedTime: { fontSize: 11, color: Colors.textMuted, marginTop: 3, fontWeight: '600' },
+  dashboardGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 8 },
+  dashboardTile: { width: '48%', backgroundColor: '#fff', borderRadius: Radius.md, padding: Spacing.lg, alignItems: 'center', justifyContent: 'center', ...Shadows.card },
+  tileIconWrap: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
+  tileLabel: { fontSize: 14, fontWeight: '700', color: Colors.textPrimary },
   footer: { textAlign: 'center', color: Colors.textMuted, fontSize: 11, fontWeight: '600', paddingTop: Spacing.xl },
 });

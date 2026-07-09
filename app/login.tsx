@@ -11,6 +11,7 @@ import {
   StyleSheet, Text, TextInput, View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ResponsiveContainer } from '@/components/ui/ResponsiveContainer';
 import { useAlert } from '@/template';
 import { Colors, Radius, Shadows, Spacing } from '@/constants/theme';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
@@ -475,7 +476,8 @@ export default function LoginScreen() {
       <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
           <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-            <View style={styles.header}>
+            <ResponsiveContainer maxWidth={550}>
+              <View style={styles.header}>
               <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12}>
                 <MaterialCommunityIcons name="arrow-left" color="rgba(255,255,255,0.9)" size={22} />
               </Pressable>
@@ -531,7 +533,8 @@ export default function LoginScreen() {
               </View>
             )}
 
-            <Text style={styles.footer}>Secured by Supabase Auth · Made by team NovaThink</Text>
+              <Text style={styles.footer}>Secured by Supabase Auth · Made by team NovaThink</Text>
+            </ResponsiveContainer>
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>

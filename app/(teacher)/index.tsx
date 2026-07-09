@@ -13,6 +13,7 @@ import { Colors, Radius, Shadows, Spacing } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
 // Real data only — no mock fallbacks
 import { fetchStudents, fetchTodayAttendance } from '@/services/schoolData';
+import { ResponsiveContainer } from '@/components/ui/ResponsiveContainer';
 
 export default function TeacherDashboard() {
   const { user } = useAuth();
@@ -52,6 +53,7 @@ export default function TeacherDashboard() {
   return (
     <View style={{ flex: 1, backgroundColor: Colors.background }}>
       <SafeAreaView edges={['top']} style={{ backgroundColor: Colors.primaryDark }}>
+        <ResponsiveContainer maxWidth={600}>
         <LinearGradient colors={[Colors.primaryDark, Colors.primary]} style={styles.hero}>
           <View style={styles.heroRow}>
             <View style={{ flex: 1 }}>
@@ -82,9 +84,11 @@ export default function TeacherDashboard() {
             )}
           </View>
         </LinearGradient>
+        </ResponsiveContainer>
       </SafeAreaView>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <ResponsiveContainer maxWidth={600}>
         {/* Stats */}
         <View style={styles.statsGrid}>
           <StatCard label="Present" value={`${presentCount}/${totalStudents}`} icon="account-check" tone={Colors.success} bg={Colors.successBg} />
@@ -221,6 +225,47 @@ export default function TeacherDashboard() {
             </Pressable>
           )}
         </View>
+
+        <Text style={styles.section}>Tools</Text>
+        <View style={styles.dashboardGrid}>
+          <Pressable style={styles.dashboardTile} onPress={() => router.push('/(teacher)/students')}>
+            <View style={[styles.tileIconWrap, { backgroundColor: Colors.infoBg }]}>
+              <MaterialCommunityIcons name="account-group" size={28} color={Colors.info} />
+            </View>
+            <Text style={styles.tileLabel}>Students</Text>
+          </Pressable>
+          <Pressable style={styles.dashboardTile} onPress={() => router.push('/(teacher)/homework')}>
+            <View style={[styles.tileIconWrap, { backgroundColor: Colors.warningBg }]}>
+              <MaterialCommunityIcons name="clipboard-text" size={28} color={Colors.warning} />
+            </View>
+            <Text style={styles.tileLabel}>Homework</Text>
+          </Pressable>
+          <Pressable style={styles.dashboardTile} onPress={() => router.push('/(teacher)/lesson')}>
+            <View style={[styles.tileIconWrap, { backgroundColor: Colors.primary + '18' }]}>
+              <MaterialCommunityIcons name="book-edit" size={28} color={Colors.primary} />
+            </View>
+            <Text style={styles.tileLabel}>Lesson Plan</Text>
+          </Pressable>
+          <Pressable style={styles.dashboardTile} onPress={() => router.push('/(teacher)/diary')}>
+            <View style={[styles.tileIconWrap, { backgroundColor: Colors.successBg }]}>
+              <MaterialCommunityIcons name="notebook-edit" size={28} color={Colors.success} />
+            </View>
+            <Text style={styles.tileLabel}>Class Diary</Text>
+          </Pressable>
+          <Pressable style={styles.dashboardTile} onPress={() => router.push('/(teacher)/ai')}>
+            <View style={[styles.tileIconWrap, { backgroundColor: '#7C3AED18' }]}>
+              <MaterialCommunityIcons name="brain" size={28} color="#7C3AED" />
+            </View>
+            <Text style={styles.tileLabel}>AI Assistant</Text>
+          </Pressable>
+          <Pressable style={styles.dashboardTile} onPress={() => router.push('/(teacher)/profile')}>
+            <View style={[styles.tileIconWrap, { backgroundColor: Colors.saffron + '18' }]}>
+              <MaterialCommunityIcons name="account-circle" size={28} color={Colors.saffron} />
+            </View>
+            <Text style={styles.tileLabel}>Profile</Text>
+          </Pressable>
+        </View>
+        </ResponsiveContainer>
       </ScrollView>
     </View>
   );
@@ -272,4 +317,8 @@ const styles = StyleSheet.create({
   section: { fontSize: 17, fontWeight: '800', color: Colors.textPrimary, marginTop: Spacing.xl, marginBottom: Spacing.md },
   cardTitle: { fontSize: 15, fontWeight: '700', color: Colors.textPrimary },
   cardSub: { fontSize: 13, color: Colors.textSecondary, marginTop: 2, lineHeight: 18 },
+  dashboardGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 8 },
+  dashboardTile: { width: '48%', backgroundColor: '#fff', borderRadius: Radius.md, padding: Spacing.lg, alignItems: 'center', justifyContent: 'center', ...Shadows.card },
+  tileIconWrap: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
+  tileLabel: { fontSize: 14, fontWeight: '700', color: Colors.textPrimary },
 });

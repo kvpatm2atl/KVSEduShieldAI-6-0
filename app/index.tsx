@@ -6,8 +6,9 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Redirect, useRouter } from 'expo-router';
 import { useEffect, useRef } from 'react';
-import { ActivityIndicator, Animated, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Animated, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ResponsiveContainer } from '@/components/ui/ResponsiveContainer';
 import { Colors, Radius, Shadows, Spacing } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
 import { Role } from '@/services/mockData';
@@ -25,7 +26,7 @@ const roles: {
   { id: 'security',   title: 'Security Guard',  subtitle: 'Gate & early pickup control',   icon: 'shield-star',             color: '#DC2626', bg: '#FEE2E2' },
 ];
 
-function RoleCard({ item, index }: { item: typeof roles[0]; index: number }) {
+function RoleCard({ item, index, isLarge }: { item: typeof roles[0]; index: number; isLarge: boolean }) {
   const router = useRouter();
   const scale = useRef(new Animated.Value(1)).current;
 
@@ -33,12 +34,12 @@ function RoleCard({ item, index }: { item: typeof roles[0]; index: number }) {
   const onPressOut = () => Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 50 }).start();
 
   return (
-    <Animated.View style={{ transform: [{ scale }] }}>
+    <Animated.View style={[{ transform: [{ scale }] }, isLarge && { width: '48%', marginBottom: 14 }]}>
       <Pressable
         onPressIn={onPressIn}
         onPressOut={onPressOut}
         onPress={() => router.push({ pathname: '/login', params: { role: item.id } })}
-        style={styles.roleCard}
+        style={[styles.roleCard, isLarge && { height: 100 }]}
       >
         <View style={[styles.roleIcon, { backgroundColor: item.bg }]}>
           <MaterialCommunityIcons name={item.icon} color={item.color} size={26} />
@@ -57,6 +58,8 @@ function RoleCard({ item, index }: { item: typeof roles[0]; index: number }) {
 
 export default function LandingScreen() {
   const { user, loading } = useAuth();
+  const { width } = useWindowDimensions();
+  const isLarge = width >= 768;
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(20)).current;
 
@@ -102,7 +105,7 @@ export default function LandingScreen() {
           </Animated.View>
 
           {/* Hero section */}
-          <Animated.View style={[styles.heroSection, { opacity: fadeAnim }]}>
+          <Animated.View style={[styles.heroSection, isLarge && { alignSelf: 'center', width: '100%', maxWidth: 700 }, { opacity: fadeAnim }]}>
             <LinearGradient
               colors={['rgba(42,111,219,0.15)', 'rgba(42,111,219,0.04)']}
               style={styles.heroBanner}
@@ -116,7 +119,7 @@ export default function LandingScreen() {
           </Animated.View>
 
           {/* Stats row */}
-          <Animated.View style={[styles.statsRow, { opacity: fadeAnim }]}>
+          <Animated.View style={[styles.statsRow, isLarge && { alignSelf: 'center', width: '100%', maxWidth: 700 }, { opacity: fadeAnim }]}>
             {[
               { value: '6', label: 'Roles' },
               { value: '100+', label: 'Students' },
@@ -138,8 +141,10 @@ export default function LandingScreen() {
           </Animated.View>
 
           {/* Role cards */}
-          <Animated.View style={[styles.cards, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-            {roles.map((r, i) => <RoleCard key={r.id} item={r} index={i} />)}
+          <Animated.View style={[styles.cards, isLarge && styles.cardsGrid, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+            <ResponsiveContainer maxWidth={900} style={isLarge && styles.cardsGridInner}>
+              {roles.map((r, i) => <RoleCard key={r.id} item={r} index={i} isLarge={isLarge} />)}
+            </ResponsiveContainer>
           </Animated.View>
 
           {/* Footer */}
@@ -181,6 +186,8 @@ const styles = StyleSheet.create({
   dividerText: { color: 'rgba(255,255,255,0.45)', fontSize: 11, fontWeight: '800', letterSpacing: 1.5 },
 
   cards: { paddingHorizontal: Spacing.xl, gap: 10 },
+  cardsGrid: { alignItems: 'center' },
+  cardsGridInner: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
   roleCard: { backgroundColor: '#fff', borderRadius: Radius.xl, padding: Spacing.lg, flexDirection: 'row', alignItems: 'center', ...Shadows.raised },
   roleIcon: { width: 52, height: 52, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginRight: 14 },
   roleTitle: { fontSize: 16, fontWeight: '800', color: Colors.textPrimary },

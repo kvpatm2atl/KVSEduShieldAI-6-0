@@ -1,46 +1,56 @@
-name: Build Android APK
+name: Android Build (APK)
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   workflow_dispatch:
-    inputs:
-      profile:
-        description: 'Build profile (preview or production)'
-        required: false
-        default: 'preview'
 
 jobs:
   build-android:
-    name: Build Android APK
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: '18'
+          cache: npm
+
+      - name: Install Expo CLI
+        run: npm install -g expo-cli
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      - name: Setup EAS CLI
-        uses: expo/expo-github-action@v8
-        with:
-          eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
-
-      - name: Build Android APK (preview)
-        run: eas build --platform android --profile ${{ github.event.inputs.profile || 'preview' }} --non-interactive --no-wait
+      - name: Expo login (non‑interactive)
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: expo login --token $EXPO_TOKEN
 
-      - name: Build status
+      - name: Build Android APK with EAS
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: npx eas-cli build --platform android --profile production --non-interactive
+
+      - name: Download APK artifact
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
-          echo "Build submitted to EAS! Monitor at https://expo.dev/accounts/[your-account]/projects/kvs-edushield-ai/builds"
-          echo "Once complete, APK will be available to download from EAS dashboard."
+          ARTIFACT_URL=$(eas artifacts:list --platform android --latest | grep -o 'https://.*\.apk')
+          mkdir -p ./artifacts
+          curl -L "$ARTIFACT_URL" -o ./artifacts/app-release.apk
+
+      - name: Upload APK as GitHub artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: ./artifacts/app-release.apk
+
+      - name: Publish to Google Play (optional)
+#        if: "${{ secrets.PLAY_STORE_SERVICE_ACCOUNT != '' }}"
+        env:
+          PLAY_STORE_SERVICE_ACCOUNT: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT }}
+        run: |
+          echo "$PLAY_STORE_SERVICE_ACCOUNT" > service-account.json
+          npx eas-cli submit --platform android --service-account-path service-account.json --skip-build
