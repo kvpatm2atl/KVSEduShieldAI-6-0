@@ -39,6 +39,7 @@ export default function AdminLayout() {
       <Tabs.Screen name="security"  options={{ title: 'Security',  tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="shield-star"              size={size} color={color} /> }} />
       <Tabs.Screen name="analytics" options={{ title: 'Analytics', tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="chart-bar"                 size={size} color={color} /> }} />
       <Tabs.Screen name="ai"        options={{ title: 'AI',        tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="brain"                     size={size} color={color} /> }} />
+      <Tabs.Screen name="emergency" options={{ title: 'Alerts',    tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="alert-circle"              size={size} color={color} /> }} />
       <Tabs.Screen name="profile"   options={{ title: 'Profile',   tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="account-circle"            size={size} color={color} /> }} />
     </Tabs>
   );

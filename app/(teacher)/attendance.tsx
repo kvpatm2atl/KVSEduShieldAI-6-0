@@ -79,8 +79,12 @@ export default function TeacherAttendance() {
   const exportCSV = async () => {
     const csv = generateAttendanceCSV(students, presence, section);
     try {
-      const date = new Date().toLocaleDateString('en-IN').replace(/\//g, '_');
-      await Share.share({ title: `Class${section}_${date}`, message: csv });
+      const date = new Date().toLocaleDateString('en-IN').replace(/\//g, '-');
+      await Share.share({
+        title: `Attendance_${section}_${date}.csv`,
+        message: csv,
+        // On iOS this creates a shareable .csv text; on Android opens share sheet
+      });
     } catch {
       showAlert('Export failed', 'Could not share the attendance file.');
     }

@@ -13,6 +13,7 @@ import { Colors, Radius, Shadows, Spacing } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
 import { getSupabaseClient } from '@/template';
 import { fetchNotices } from '@/services/schoolData';
+import { LinearGradient as LG2 } from 'expo-linear-gradient';
 
 const supabase = getSupabaseClient();
 
@@ -27,6 +28,7 @@ export default function AdminOverview() {
   });
   const [recentIncidents, setRecentIncidents] = useState<any[]>([]);
   const [recentNotices, setRecentNotices] = useState<any[]>([]);
+  const [activeAlerts, setActiveAlerts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => { loadData(); }, []);
@@ -35,7 +37,7 @@ export default function AdminOverview() {
     setLoading(true);
     const today = new Date().toISOString().split('T')[0];
 
-    const [studRes, teachRes, busRes, attRes, pickupRes, incRes, hwRes] = await Promise.all([
+    const [studRes, teachRes, busRes, attRes, pickupRes, incRes, hwRes, alertRes] = await Promise.all([
       supabase.from('students').select('id', { count: 'exact', head: true }),
       supabase.from('user_profiles').select('id', { count: 'exact', head: true }).eq('role', 'teacher'),
       supabase.from('buses').select('id', { count: 'exact', head: true }),
@@ -43,7 +45,9 @@ export default function AdminOverview() {
       supabase.from('early_pickup_requests').select('id', { count: 'exact', head: true }).eq('status', 'Pending'),
       supabase.from('incidents').select('id,student_name,type,notes,section,severity,created_at,resolved').eq('resolved', false).order('created_at', { ascending: false }).limit(4),
       supabase.from('homework').select('id', { count: 'exact', head: true }),
+      supabase.from('emergency_alerts').select('*').eq('is_active', true).order('created_at', { ascending: false }),
     ]);
+    setActiveAlerts(alertRes.data ?? []);
 
     const ns = await fetchNotices();
 
@@ -64,7 +68,22 @@ export default function AdminOverview() {
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.background }}>
-      <SafeAreaView edges={['top']} style={{ backgroundColor: '#3D2A6B' }}>
+      {/* Emergency Alert Banner */}
+      {activeAlerts.length > 0 && (
+        <View style={{ zIndex: 100 }}>
+          <LG2 colors={['#7F1D1D', '#DC2626']} style={styles.emergencyBanner}>
+            <MaterialCommunityIcons name="alert-circle" color="#fff" size={20} />
+            <View style={{ flex: 1, marginLeft: 10 }}>
+              <Text style={styles.emergencyTitle}>ACTIVE ALERT · {activeAlerts[0].alert_type?.toUpperCase()}</Text>
+              <Text style={styles.emergencyMsg} numberOfLines={1}>{activeAlerts[0].title}</Text>
+            </View>
+            <Pressable onPress={() => router.push('/(admin)/emergency')} style={styles.emergencyBtn}>
+              <Text style={styles.emergencyBtnText}>Manage</Text>
+            </Pressable>
+          </LG2>
+        </View>
+      )}
+      <SafeAreaView edges={activeAlerts.length > 0 ? [] : ['top']} style={{ backgroundColor: '#3D2A6B' }}>
         <LinearGradient colors={['#3D2A6B', '#6B3FA0', '#A36BD6']} style={styles.hero}>
           <View style={styles.heroRow}>
             <View>
@@ -122,6 +141,8 @@ export default function AdminOverview() {
         {/* Quick navigation */}
         <Text style={styles.section}>Quick access</Text>
         <Card padded={false}>
+          <NavRow icon="alert-circle" label="Emergency Alerts" tint={Colors.danger} bg={Colors.dangerBg} onPress={() => router.push('/(admin)/emergency')} badge={activeAlerts.length > 0 ? `${activeAlerts.length} LIVE` : undefined} />
+          <Divider />
           <NavRow icon="chart-bar" label="Analytics & Reports" tint={Colors.success} bg={Colors.successBg} onPress={() => router.push('/(admin)/analytics')} />
           <Divider />
           <NavRow icon="brain" label="AI Insights" tint="#6E55C2" bg="#F0ECFD" onPress={() => router.push('/(admin)/ai')} />
@@ -244,6 +265,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.xl, paddingTop: Spacing.lg, paddingBottom: Spacing.xxl,
     borderBottomLeftRadius: Radius.xl, borderBottomRightRadius: Radius.xl,
   },
+  emergencyBanner: {
+    flexDirection: 'row' as const, alignItems: 'center' as const,
+    paddingHorizontal: Spacing.xl, paddingVertical: 10,
+  },
+  emergencyTitle: { color: 'rgba(255,255,255,0.75)', fontSize: 10, fontWeight: '900' as const, letterSpacing: 0.8 },
+  emergencyMsg: { color: '#fff', fontSize: 13, fontWeight: '700' as const },
+  emergencyBtn: { backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: Radius.sm, paddingHorizontal: 10, paddingVertical: 5 },
+  emergencyBtnText: { color: '#fff', fontSize: 11, fontWeight: '800' as const },
   heroRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   hello: { color: 'rgba(255,255,255,0.75)', fontSize: 11, fontWeight: '800', letterSpacing: 0.9, textTransform: 'uppercase' },
   name: { color: '#fff', fontSize: 22, fontWeight: '800', marginTop: 6 },

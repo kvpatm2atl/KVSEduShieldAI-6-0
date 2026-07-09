@@ -37,6 +37,7 @@ export default function TeacherLayout() {
       <Tabs.Screen name="analytics"  options={{ title: 'Analytics',  tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="chart-bar"          size={size} color={color} /> }} />
       <Tabs.Screen name="incidents"  options={{ title: 'Incidents',  tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="alert-circle"       size={size} color={color} /> }} />
       <Tabs.Screen name="ai"         options={{ title: 'AI',         tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="brain"              size={size} color={color} /> }} />
+      <Tabs.Screen name="diary"     options={{ title: 'Diary',      tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="notebook-edit"     size={size} color={color} /> }} />
       <Tabs.Screen name="profile"    options={{ title: 'Profile',    tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="account-circle"     size={size} color={color} /> }} />
     </Tabs>
   );

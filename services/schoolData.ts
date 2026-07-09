@@ -84,7 +84,7 @@ export async function saveAttendance(
   return { error: error?.message ?? null };
 }
 
-// Generate CSV string from attendance data (Excel compatible)
+// Generate CSV string from attendance data — Excel-compatible UTF-8 BOM format
 export function generateAttendanceCSV(
   students: StudentRow[],
   presence: Record<string, boolean>,
@@ -93,18 +93,71 @@ export function generateAttendanceCSV(
   const now = new Date();
   const dateStr = now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
   const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-  const header = `KVS EduShield AI - Attendance Report\nSection: ${section}\nDate: ${dateStr}\nGenerated: ${timeStr}\nMade by team NovaThink\n\n`;
-  const cols = 'Roll No,Admission No,Student Name,Status,Time\n';
+  // UTF-8 BOM for Excel compatibility + metadata rows
+  const bom = '\uFEFF';
+  const meta = [
+    `"KVS EduShield AI - Attendance Report"`,
+    `"Section:","${section}"`,
+    `"Date:","${dateStr}"`,
+    `"Generated:","${timeStr}"`,
+    `"Made by:","team NovaThink"`,
+    '',
+    'Roll No,Admission No,Student Name,Gender,Status,Time',
+  ].join('\n');
   const rows = students.map((s, i) =>
-    `${s.roll_no ?? i + 1},${s.admission_no},"${s.name}",${presence[s.id] ? 'Present' : 'Absent'},${presence[s.id] ? timeStr : '—'}`
+    `${s.roll_no ?? i + 1},${s.admission_no},"${s.name}",${s.gender ?? ''},${presence[s.id] !== false ? 'Present' : 'Absent'},${presence[s.id] !== false ? timeStr : '—'}`
   ).join('\n');
-  const present = Object.values(presence).filter(Boolean).length;
+  const present = students.filter(s => presence[s.id] !== false).length;
   const total = students.length;
   const absent = total - present;
-  const summary = `\n\nSummary\nTotal,${total}\nPresent,${present}\nAbsent,${absent}\nRate,${total > 0 ? Math.round((present / total) * 100) : 0}%`;
-  const absentNames = students.filter(s => !presence[s.id]).map(s => s.name).join('; ');
-  const absentSection = absent > 0 ? `\n\nAbsent Students\n${absentNames}` : '';
-  return header + cols + rows + summary + absentSection;
+  const rate = total > 0 ? Math.round((present / total) * 100) : 0;
+  const summary = [
+    '',
+    '"Summary"',
+    `"Total Students",${total}`,
+    `"Present",${present}`,
+    `"Absent",${absent}`,
+    `"Attendance Rate","${rate}%"`,
+  ].join('\n');
+  const absentStudents = students.filter(s => presence[s.id] === false);
+  const absentSection = absentStudents.length > 0
+    ? '\n\n"Absent Students"\n' + absentStudents.map((s, i) => `${i + 1},"${s.name}","${s.admission_no}"`).join('\n')
+    : '';
+  return bom + meta + '\n' + rows + summary + absentSection;
+}
+
+// Generate student detail export CSV — all personal info
+export function generateStudentDetailCSV(students: StudentRow[], section: string): string {
+  const now = new Date();
+  const bom = '\uFEFF';
+  const meta = [
+    `"KVS EduShield AI - Student Detail Report"`,
+    `"Section: ${section} | Generated: ${now.toLocaleDateString('en-IN')}"`,
+    `"Made by team NovaThink"`,
+    '',
+    'Roll No,Admission No,Name,Gender,DOB,DOA,PEN No,UID/Aadhar,Father Name,Mother Name,Phone,Email,Blood Group,Address,Emergency Contact,Attendance %',
+  ].join('\n');
+  const rows = students.map((s, i) =>
+    [
+      s.roll_no ?? i + 1,
+      `"${s.admission_no}"`,
+      `"${s.name}"`,
+      s.gender ?? '',
+      s.date_of_birth ?? '',
+      s.date_of_admission ?? '',
+      `"${s.pen_no ?? ''}"`,
+      `"${s.aadhar ?? s.uid ?? ''}"`,
+      `"${s.father_name ?? ''}"`,
+      `"${s.mother_name ?? ''}"`,
+      `"${s.phone ?? ''}"`,
+      `"${s.email ?? ''}"`,
+      s.blood_group ?? '',
+      `"${(s.address ?? '').replace(/"/g, "'")}"`,
+      `"${s.emergency_contact ?? ''}"`,
+      `${s.attendance_pct ?? 0}%`,
+    ].join(',')
+  ).join('\n');
+  return bom + meta + '\n' + rows;
 }
 
 // Generate sample student upload CSV for teachers

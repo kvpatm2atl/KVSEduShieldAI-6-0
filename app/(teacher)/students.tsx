@@ -17,7 +17,7 @@ import { useAlert } from '@/template';
 import { useAuth } from '@/hooks/useAuth';
 import {
   fetchStudents, updateStudentDetails, updateStudentRollOrders,
-  generateStudentSampleCSV, StudentRow
+  generateStudentSampleCSV, generateStudentDetailCSV, StudentRow
 } from '@/services/schoolData';
 import { getSupabaseClient } from '@/template';
 
@@ -107,8 +107,17 @@ export default function TeacherStudents() {
   const downloadSample = async () => {
     const csv = generateStudentSampleCSV(section);
     try {
-      await Share.share({ title: `StudentTemplate_${section}`, message: csv });
+      const date = new Date().toLocaleDateString('en-IN').replace(/\//g, '_');
+      await Share.share({ title: `StudentTemplate_${section}_${date}.csv`, message: csv });
     } catch { showAlert('Error', 'Could not share the sample file.'); }
+  };
+
+  const exportAllStudents = async () => {
+    const csv = generateStudentDetailCSV(students, section);
+    try {
+      const date = new Date().toLocaleDateString('en-IN').replace(/\//g, '_');
+      await Share.share({ title: `Students_${section}_${date}.csv`, message: csv });
+    } catch { showAlert('Error', 'Could not export students.'); }
   };
 
   const parseDate = (val: string): string | undefined => {
@@ -253,6 +262,10 @@ export default function TeacherStudents() {
                 <Text style={styles.saveOrderText}>{saving ? 'Saving…' : 'Save Order'}</Text>
               </Pressable>
             )}
+            <Pressable onPress={exportAllStudents} style={[styles.actionBtn, { backgroundColor: '#F5F0FF', borderColor: '#7C3AED40' }]}>
+              <MaterialCommunityIcons name="download" color="#7C3AED" size={16} />
+              <Text style={[styles.actionBtnText, { color: '#7C3AED' }]}>Export All</Text>
+            </Pressable>
             <Pressable onPress={downloadSample} style={styles.actionBtn}>
               <MaterialCommunityIcons name="microsoft-excel" color={Colors.info} size={16} />
               <Text style={[styles.actionBtnText, { color: Colors.info }]}>Sample CSV</Text>
