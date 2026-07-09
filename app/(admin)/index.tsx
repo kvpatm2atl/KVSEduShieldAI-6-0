@@ -13,7 +13,6 @@ import { Colors, Radius, Shadows, Spacing } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
 import { getSupabaseClient } from '@/template';
 import { fetchNotices } from '@/services/schoolData';
-import { LinearGradient as LG2 } from 'expo-linear-gradient';
 
 const supabase = getSupabaseClient();
 
@@ -71,7 +70,7 @@ export default function AdminOverview() {
       {/* Emergency Alert Banner */}
       {activeAlerts.length > 0 && (
         <View style={{ zIndex: 100 }}>
-          <LG2 colors={['#7F1D1D', '#DC2626']} style={styles.emergencyBanner}>
+          <LinearGradient colors={['#7F1D1D', '#DC2626']} style={styles.emergencyBanner}>
             <MaterialCommunityIcons name="alert-circle" color="#fff" size={20} />
             <View style={{ flex: 1, marginLeft: 10 }}>
               <Text style={styles.emergencyTitle}>ACTIVE ALERT · {activeAlerts[0].alert_type?.toUpperCase()}</Text>
@@ -80,7 +79,7 @@ export default function AdminOverview() {
             <Pressable onPress={() => router.push('/(admin)/emergency')} style={styles.emergencyBtn}>
               <Text style={styles.emergencyBtnText}>Manage</Text>
             </Pressable>
-          </LG2>
+          </LinearGradient>
         </View>
       )}
       <SafeAreaView edges={activeAlerts.length > 0 ? [] : ['top']} style={{ backgroundColor: '#3D2A6B' }}>
@@ -266,13 +265,15 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: Radius.xl, borderBottomRightRadius: Radius.xl,
   },
   emergencyBanner: {
-    flexDirection: 'row' as const, alignItems: 'center' as const,
-    paddingHorizontal: Spacing.xl, paddingVertical: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: 10,
   },
-  emergencyTitle: { color: 'rgba(255,255,255,0.75)', fontSize: 10, fontWeight: '900' as const, letterSpacing: 0.8 },
-  emergencyMsg: { color: '#fff', fontSize: 13, fontWeight: '700' as const },
+  emergencyTitle: { color: 'rgba(255,255,255,0.75)', fontSize: 10, fontWeight: '900', letterSpacing: 0.8 },
+  emergencyMsg: { color: '#fff', fontSize: 13, fontWeight: '700' },
   emergencyBtn: { backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: Radius.sm, paddingHorizontal: 10, paddingVertical: 5 },
-  emergencyBtnText: { color: '#fff', fontSize: 11, fontWeight: '800' as const },
+  emergencyBtnText: { color: '#fff', fontSize: 11, fontWeight: '800' },
   heroRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   hello: { color: 'rgba(255,255,255,0.75)', fontSize: 11, fontWeight: '800', letterSpacing: 0.9, textTransform: 'uppercase' },
   name: { color: '#fff', fontSize: 22, fontWeight: '800', marginTop: 6 },
